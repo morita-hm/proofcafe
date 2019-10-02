@@ -18,7 +18,7 @@ Unset Printing Implicit Defensive.
 
 Inductive balle :=
 | rouge  (* red ball, la balle rouge, 紅玉 *)
-| blanc. (* white ball, la balle blanc, 白玉 *)
+| blanche. (* white ball, la balle blanche, 白玉 *)
 
 
 (** Question 3.2 *)
@@ -33,7 +33,7 @@ Check nil            : balles.
 Fail Check rouge      : balles.
 Check cons rouge nil  : balles.
 Fail Check nil cons rouge nil : balles.
-Check cons blanc (cons rouge nil).
+Check cons blanche (cons rouge nil).
 
 
 (** Question 3.4 *)
@@ -42,38 +42,29 @@ Fixpoint compter_les_balles_rouges (s : balles) : nat :=
   match s with
   | nil => 0
   | rouge :: s => (compter_les_balles_rouges s).+1
-  | blanc :: s => compter_les_balles_rouges s
+  | blanche :: s => compter_les_balles_rouges s
   end.
 
-(** Question 3.5 追加の問題 *)
-(** 与えられた玉の列に対する赤玉の数を示す述語 num_of_red を Inductive により定義せよ。 *)
-
-(** Question 3.6 追加の問題 *)
-(** 命題 num_of_red (cons 白玉 (cons 赤玉 nil)) 1 が真であることを示せ。 *)
-
-(** Question 3.7 追加の問題 *)
-(** 命題 num_of_red (cons 白玉 (cons 赤玉 nil)) 0 が偽（否定が真）であることを示せ。 *)
-
-(** Question 3.8 追加の問題 *)
-(** 問 3.4 で定義した 関数 赤数え の結果と、問 3.5 で定義した 述語
-    num_of_red の命題が必要十分条件であることを定理として示せ。
-    このとき、num_of_red の定義を見直してもよい。 *)
+(** Question 3.5, 3.6, 3.7, 3.8
+ See https://github.com/suharahiromichi/coq/blob/master/csm/csm_ex_3_no_answer.v
+ *)
 
 (** Question 3.9 *)
-(** sumn を用いて 関数 赤数え'(compter_les_balles_rouge') を定義し, 
-    問 3.4 で定義した 関数 赤数え(compter_les_balles_rouge) の結果と一致することを証明しましょう.
+(** sumn を用いて関数 compter_les_balles_rouges' を以下のように定義しました.
+    問 3.4 で定義した 関数 compter_les_balles_rouges の結果と一致すること
+    を証明しましょう. 
  *)
 Definition compter_les_balles_rouges' (s : balles) :=
   sumn (map (fun m => if m is rouge then 1 else 0) s).
 
-Lemma compter_les_balles : forall (s : balles),
+Lemma compter_les_balles_rouges_map : forall (s : balles),
     compter_les_balles_rouges' s = compter_les_balles_rouges s.
 Admitted.
 
 (** Question 3.10 *)
 
 (** 以下のヒントを参考に次の証明を完成しましょう *)
-Goal forall (s : balles),
+Lemma compter_les_balles_rouges_rev : forall (s : balles),
     compter_les_balles_rouges (rev s) = compter_les_balles_rouges s.
 Admitted.
 
@@ -85,4 +76,17 @@ Goal forall (s : balles),
   by rewrite map_rev sumn_rev.
 Qed.
 
+(** Question 3.11 *)
+
+(* 以下を証明しましょう *)
+Lemma compter_les_balles_rouges_filter : forall (s : balles),
+    compter_les_balles_rouges s = size [seq m <- s | if m is rouge then true else false].
+Admitted.
+
+(** Question 3.12 *)
+
+(* 以下を証明しましょう *)
+Goal forall (s : balles),
+    size [seq m <- s | if m is rouge then true else false] + size [seq m <- s | if m is blanche then true else false] = size s.
+Admitted.
 (* END *)
