@@ -1,7 +1,7 @@
 From mathcomp Require Import all_ssreflect.
 
 (*
- * [概略]
+ * [概略] 第96回 ProofCafe : @suharahiromichi さんの解説から
  * 直観主義論理でリフレクション補題の成立を証明または公理にして
  * 二重否定除去(背理法の考え方)を使う試みについて
  *
@@ -99,11 +99,11 @@ Qed.
 
 (* Bool.iff_reflect : P <-> b = true -> reflect P b を使って, 
  * reflect (~ P) (~~ b), reflect (~ ~ P) (~~ ~~ b) を言い換えて,
- * reflect P b -> reflect (~ P) (~~ ~~ b) -> reflect (~ ~ P) (~~ ~~ b)
+ * reflect P b -> reflect (~ P) (~~ b) -> reflect (~ ~ P) (~~ ~~ b)
  * を証明していきます.
  *)
 
-(* まずは reflect P b -> reflect (~ P) (~~ ~~ b) から *)
+(* まずは reflect P b -> reflect (~ P) (~~ b) から *)
 Lemma refl_notP_negb_iff : forall (P : Prop) (b : bool), reflect P b -> reflect (~ P) (~~ b).
 Proof.
   move=> P b Hr.
@@ -152,6 +152,8 @@ Proof.
 Qed.
 
 (*
+ * リフレクションについての詳しい解説は以下にあります.
+ * https://github.com/suharahiromichi/coq/blob/master/ssr/ssr_small_ssreflect_2.v
  * また, 排中律や二重否定除去と同値な命題については
  * http://proofcafe.org/sf/Logic_J.html
  * を参照するとよいでしょう.
