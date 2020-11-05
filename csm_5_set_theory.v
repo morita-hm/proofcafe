@@ -83,6 +83,13 @@ Notation "A ∪ B" := (myCup A B) (at level 11).
 Definition myCap {M : Type} (A B : mySet M) : mySet M := fun (x : M) => x ∈ A /\ x ∈ B.
 Notation "A ∩ B" := (myCap A B) (at level 11).
 
+(* 差集合, 相対補集合 *)
+Definition myBackSlash {M : Type} (A B : mySet M) : mySet M := fun (x : M) => x ∈ A /\ ~(x ∈ B).
+Notation "A \ B" := (myBackSlash A B) (at level 11).
+
+(* 部分集合族 *)
+Definition power {M : Type} (X : mySet M) : mySet (mySet M) :=
+  fun (V : mySet M) => V ⊂ X.
 
 Section 演算.
   Variable M : Type.
@@ -91,6 +98,16 @@ Section 演算.
   Proof.
     apply: axiom_ExteqmySet.
     by apply: conj; rewrite /myComplement => x HxM.
+  Qed.
+
+  (* 母集合 U, 空集合 phi を使った言い換え *)
+  Definition U := @myMotherSet M.
+  Definition phi := @myEmptySet M.
+  
+  Lemma cphi_U : phi^c = U.
+  Proof.
+    rewrite /phi /U.
+      by apply: cEmpty_Mother.
   Qed.
   
   Lemma cc_cancel (A : mySet M) : (A^c)^c = A.
@@ -153,15 +170,13 @@ Section 演算.
   Proof.
     apply: axiom_ExteqmySet.
     rewrite /eqmySet /mySub /myCup /belong.
-    apply: conj.
-    - move=> x H1.
-      case H1 => t.
-      + by apply or_intror.
-      + by apply or_introl.
-    - move=> x H2.
-      case H2 => t.
-      + by apply or_intror.
-      + by apply or_introl.
+    apply: conj => x H.
+    - case H => t.
+      + by apply: or_intror.
+      + by apply: or_introl.
+    - case H => t.
+      + by apply: or_intror.
+      + by apply: or_introl.
   Qed.
 
   
@@ -188,7 +203,7 @@ Section 演算.
         * done.
         * by split.
     - case H => Ha Hbc.
-      + case Hbc => Hbx Hcx.
+      case Hbc => Hbx Hcx.
         by split.
   Qed.
 
@@ -199,9 +214,9 @@ Section 演算.
     rewrite /eqmySet /mySub /myCap /belong.
     apply: conj => x Hab.
     - case Hab => Hax Hbx.
-      by split.
+        by split.
     - case Hab => Hbx Hax.
-      by split.
+        by split.
   Qed.  
   
   (* @morita_hm : 積集合は部分集合 *)
@@ -243,6 +258,30 @@ Section 演算.
       + apply: H.
           by right.
   Qed.
+
+  (* @morita_hm : 差集合 = 相対補集合 *)
+  Lemma relative_complemant (A B : mySet M) : A \ B = A ∩ (B^c).
+  Proof.
+    apply: axiom_ExteqmySet.
+    rewrite /eqmySet /myCap /myBackSlash /myComplement /mySub /belong.
+    apply: conj => x H.
+    - case: H => Hax Hnbx.
+        by apply: conj.
+    - case: H => Hax Hnbx.
+        by apply: conj.
+  Qed.
+
+  (* @morita_hm : 部分集合族を使った包含関係の言い換え *)
+  Lemma power_trivial (V X : mySet M) : V ⊂ X -> V ∈ power X.
+  Proof.
+    move=> Hvx.
+      by rewrite /belong /power.
+  Qed.
+
+  (* TODO
+     V ∈ power X -> W ∈ power X -> V ∪ W ∈ power X
+     V ∈ power X -> W ∈ power X -> V ∩ W ∈ power X
+   *)
   
 End 演算.
 
@@ -256,26 +295,39 @@ Definition MapCompo {M1 M2 M3 : Type} (f : M2 -> M3) (g : M1 -> M2) : M1 -> M3 :
   fun (x : M1) => f (g x).
 Notation "f ● g" := (MapCompo f g) (at level 11).
 
-(* 像 *)
+(* 像 : image *)
 Definition ImgOf {M1 M2 : Type} (f : M1 -> M2) {A : mySet M1} {B : mySet M2}
            (_ : f ∈Map A \to B) : mySet M2 :=
   fun (y : M2) => exists (x : M1), y = f x /\ x ∈ A.
 
-(* 単射 *)
+(* 逆像 : inverse image *) 
+Definition myPullBack {M1 M2 : Type} (f : M1 -> M2) {A : mySet M1} {B : mySet M2} (_ : f ∈Map A \to B) : mySet M1 := fun (x : M1) => x ∈ X /\ f x ∈ Y.
+
+
+(* TODO :
+   V ∈ power X に対して f(V),
+   W ∈ power Y に対して f^{-1}(W)
+を定義する *) 
+
+
+
+(* 単射 : injection *)
 Definition mySetInj {M1 M2 : Type} (f : M1 -> M2) {A : mySet M1} {B : mySet M2}
            (_ : f ∈Map A \to B) : Prop :=
   forall (x y : M1), x ∈ A -> y ∈ A -> f x = f y -> x = y.
 
-(* 全射 *)
+(* 全射 : surjection *)
 Definition mySetSur {M1 M2 : Type} (f : M1 -> M2) {A : mySet M1} {B : mySet M2}
            (_ : f ∈Map A \to B) : Prop :=
   forall (y : M2), y ∈ B -> exists (x : M1), x ∈ A -> f x = y.
 
-(* 全単射 *)
+(* 全単射 : bijection *)
 Definition mySetBi {M1 M2 : Type} (f : M1 -> M2) {A : mySet M1} {B : mySet M2}
            (fAB : f ∈Map A \to B) : Prop :=
   mySetInj fAB /\ mySetSur fAB.
 
+(* 逆像 *)
+Definition myPullBack {M1 M2 : Type} (f : M1 -> 
 
 Section 写像.
   Variable M1 M2 M3 : Type.
