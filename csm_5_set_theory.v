@@ -149,6 +149,14 @@ Section 演算.
       by rewrite -cEmpty_Mother cc_cancel.
   Qed.
 
+  (* @morita_hm : ⊂ の推移律 *)
+  Lemma sub_trans (V W X : mySet M) :
+    V ⊂ W -> W ⊂ X -> V ⊂ X.
+  Proof.
+    rewrite /mySub /belong => Hv Hw x Hvx.
+      by apply/(Hw x)/(Hv x).
+  Qed.
+    
   Lemma myCupA (A B C : mySet M) : (A ∪ B) ∪ C = A ∪ (B ∪ C).
   Proof.
     apply: axiom_ExteqmySet.
@@ -278,10 +286,25 @@ Section 演算.
       by rewrite /belong /power.
   Qed.
 
-  (* TODO
-     V ∈ power X -> W ∈ power X -> V ∪ W ∈ power X
-     V ∈ power X -> W ∈ power X -> V ∩ W ∈ power X
-   *)
+  Lemma power_intersection (V W X : mySet M) :
+    V ∈ power X -> W ∈ power X -> V ∩ W ∈ power X.
+  Proof.
+    rewrite /belong /power.
+    have Hvw : V ∩ W ⊂ V by apply: intersection_self.
+    move=> Hv Hw.
+    move: Hvw Hv.
+    by apply: sub_trans.
+  Qed.
+
+  Lemma power_relative_complement (V W X : mySet M) :
+    V ∈ power X -> W ∈ power X -> V \ W ∈ power X.
+  Proof.
+    rewrite /belong /power.
+    have Hvw : V \ W ⊂ V by apply: intersection_self.
+    move=> Hv Hw.
+    move: Hvw Hv.
+    by apply: sub_trans.
+  Qed.
   
 End 演算.
 
@@ -305,8 +328,8 @@ Definition myPullBack {M1 M2 : Type} (f : M1 -> M2) {A : mySet M1} {B : mySet M2
 
 
 (* TODO :
-   V ∈ power X に対して f(V),
-   W ∈ power Y に対して f^{-1}(W)
+   V ∈ power X に対して f(V) ∈ power Y
+   W ∈ power Y に対して f^{-1}(W) ∈ power X
 を定義する *) 
 
 
