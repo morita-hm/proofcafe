@@ -148,14 +148,6 @@ Section 演算.
   Proof.
       by rewrite -cEmpty_Mother cc_cancel.
   Qed.
-
-  (* @morita_hm : ⊂ の推移律 *)
-  Lemma sub_trans (V W X : mySet M) :
-    V ⊂ W -> W ⊂ X -> V ⊂ X.
-  Proof.
-    rewrite /mySub /belong => Hv Hw x Hvx.
-      by apply/(Hw x)/(Hv x).
-  Qed.
     
   Lemma myCupA (A B C : mySet M) : (A ∪ B) ∪ C = A ∪ (B ∪ C).
   Proof.
@@ -293,7 +285,7 @@ Section 演算.
     have Hvw : V ∩ W ⊂ V by apply: intersection_self.
     move=> Hv Hw.
     move: Hvw Hv.
-    by apply: sub_trans.
+    by apply: transitive_Sub.
   Qed.
 
   Lemma power_relative_complement (V W X : mySet M) :
@@ -303,7 +295,7 @@ Section 演算.
     have Hvw : V \ W ⊂ V by apply: intersection_self.
     move=> Hv Hw.
     move: Hvw Hv.
-    by apply: sub_trans.
+    by apply: transitive_Sub.
   Qed.
   
 End 演算.
@@ -324,7 +316,7 @@ Definition ImgOf {M1 M2 : Type} (f : M1 -> M2) {A : mySet M1} {B : mySet M2}
   fun (y : M2) => exists (x : M1), y = f x /\ x ∈ A.
 
 (* 逆像 : inverse image *) 
-Definition myPullBack {M1 M2 : Type} (f : M1 -> M2) {A : mySet M1} {B : mySet M2} (_ : f ∈Map A \to B) : mySet M1 := fun (x : M1) => x ∈ X /\ f x ∈ Y.
+Definition myPullBack {M1 M2 : Type} (f : M1 -> M2) {A : mySet M1} {B : mySet M2} (_ : f ∈Map A \to B) : mySet M1 := fun (x : M1) => x ∈ A /\ f x ∈ B.
 
 
 (* TODO :
@@ -349,8 +341,6 @@ Definition mySetBi {M1 M2 : Type} (f : M1 -> M2) {A : mySet M1} {B : mySet M2}
            (fAB : f ∈Map A \to B) : Prop :=
   mySetInj fAB /\ mySetSur fAB.
 
-(* 逆像 *)
-Definition myPullBack {M1 M2 : Type} (f : M1 -> 
 
 Section 写像.
   Variable M1 M2 M3 : Type.
