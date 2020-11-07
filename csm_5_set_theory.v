@@ -306,9 +306,6 @@ Definition myMap {M1 M2 : Type} (A : mySet M1) (B : mySet M2) (f : M1 -> M2) :=
   forall (x : M1), x ∈ A -> f x ∈ B.
 Notation "f ∈Map A \to B" := (myMap A B f) (at level 11).
 
-Definition myMapOnFamily {M1 M2 : Type} (X : mySet M1) (Y : mySet M2) (f : M1 -> M2) :=
-  forall (x : M1) (A : mySet M1), x ∈ A -> A ∈ power X -> f x ∈ Y.  
-
 Definition MapCompo {M1 M2 M3 : Type} (f : M2 -> M3) (g : M1 -> M2) : M1 -> M3 :=
   fun (x : M1) => f (g x).
 Notation "f ● g" := (MapCompo f g) (at level 11).
@@ -318,9 +315,13 @@ Definition ImgOf {M1 M2 : Type} (f : M1 -> M2) {A : mySet M1} {B : mySet M2}
            (_ : f ∈Map A \to B) : mySet M2 :=
   fun (y : M2) => exists (x : M1), y = f x /\ x ∈ A.
 
-(* 部分集合族を用いた像の定義 *)
-Definition ImgOfSubset {M1 M2 : Type} (f : M1 -> M2) (A : mySet M1) {X : mySet M1} {Y : mySet M2} (_ : myMapOnFamily X Y f) : mySet M2 :=
+(* @morita_hm : 部分集合族を用いた像の定義 *)
+Definition ImgOfSubset {M1 M2 : Type} (f : M1 -> M2) {X : mySet M1} {Y : mySet M2} (_ : f ∈Map X \to Y) (A : mySet M1) : mySet M2 :=
   fun (y : M2) => exists (x : M1), A ∈ power X -> x ∈ A -> y = f x.
+
+(* 逆像 : f^{-1}(B) *)
+Definition myPullBack {M1 M2 : Type} (f : M1 -> M2) {X : mySet M1} {Y : mySet M2} (_ : f ∈Map X \to Y) (B : mySet M2) : mySet M1 :=
+  fun (x : M1) => exists (y : M2), B ∈ power Y -> y ∈ B -> y = f x. 
 
 (* 単射 : injection *)
 Definition mySetInj {M1 M2 : Type} (f : M1 -> M2) {A : mySet M1} {B : mySet M2}
@@ -371,7 +372,7 @@ Section 写像.
     apply: Hab.
     apply: Ha.
   Qed.
-  
+
   Lemma ImSub : (ImgOf gAB) ⊂ B.
   Proof.
     rewrite /ImgOf => t.
@@ -381,18 +382,26 @@ Section 写像.
       by apply: gAB.
   Qed.
 
+  (* 集合 X, Y と写像 h : X → Y および部分集合 V ⊂ X (V ∈ power X) に対して、
+     h (X \ V) ⊂ h(X) \ h(V)
+     であることの形式化 *)
   Variable h : M1 -> M2.
   Variable X : mySet M1.
   Variable Y : mySet M2.
-  Variable V V' : mySet M1.
-  Hypothesis hXY : myMapOnFamily X Y h.
-  Check @ImgOfSubset M1 M2 h V X Y hXY.
-  Check @ImgOfSubset M1 M2 h (V \ V') X Y hXY.
-  Check (@ImgOfSubset M1 M2 h V X Y hXY) \ (@ImgOfSubset M1 M2 h V' X Y hXY).
+  Variable V : mySet M1.
+  Variable W1 W2 : mySet M2.
+  Hypothesis hXY : h∈Map X \to Y.
+  Check @ImgOfSubset M1 M2 h X Y hXY X.
+  Check @ImgOfSubset M1 M2 h X Y hXY (X \ V).
+  Check (@ImgOfSubset M1 M2 h X Y hXY X) \ (@ImgOfSubset M1 M2 h X Y hXY V).
   (* TODO *)
   Lemma ImSubset :
-    V' ∈ power X -> V ∈ power X -> V' ⊂ V ->
-    (ImgOfSubset V hXY \ ImgOfSubset V' hXY) ⊂ ImgOfSubset (V \ V') hXY.
+    V ∈ power X -> (ImgOfSubset hXY X \ ImgOfSubset hXY V) ⊂ ImgOfSubset hXY (X \ V).
+  Proof.
+  Admitted.
+
+  Lemma PullBackSubset :
+    W1 ∈ power Y -> W2 ∈ power Y -> W1 ⊂ W2 -> myPullBack hXY W1 ⊂ myPullBack hXY W2.
   Proof.
     Admitted.
   
