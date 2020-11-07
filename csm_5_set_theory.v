@@ -306,6 +306,9 @@ Definition myMap {M1 M2 : Type} (A : mySet M1) (B : mySet M2) (f : M1 -> M2) :=
   forall (x : M1), x ∈ A -> f x ∈ B.
 Notation "f ∈Map A \to B" := (myMap A B f) (at level 11).
 
+Definition myMapOnFamily {M1 M2 : Type} (X : mySet M1) (Y : mySet M2) (f : M1 -> M2) :=
+  forall (x : M1) (A : mySet M1), x ∈ A -> A ∈ power X -> f x ∈ Y.  
+
 Definition MapCompo {M1 M2 M3 : Type} (f : M2 -> M3) (g : M1 -> M2) : M1 -> M3 :=
   fun (x : M1) => f (g x).
 Notation "f ● g" := (MapCompo f g) (at level 11).
@@ -315,16 +318,9 @@ Definition ImgOf {M1 M2 : Type} (f : M1 -> M2) {A : mySet M1} {B : mySet M2}
            (_ : f ∈Map A \to B) : mySet M2 :=
   fun (y : M2) => exists (x : M1), y = f x /\ x ∈ A.
 
-(* 逆像 : inverse image *) 
-Definition myPullBack {M1 M2 : Type} (f : M1 -> M2) {A : mySet M1} {B : mySet M2} (_ : f ∈Map A \to B) : mySet M1 := fun (x : M1) => x ∈ A /\ f x ∈ B.
-
-
-(* TODO :
-   V ∈ power X に対して f(V) ∈ power Y
-   W ∈ power Y に対して f^{-1}(W) ∈ power X
-を定義する *) 
-
-
+(* 部分集合族を用いた像の定義 *)
+Definition ImgOfSubset {M1 M2 : Type} (f : M1 -> M2) (A : mySet M1) {X : mySet M1} {Y : mySet M2} (_ : myMapOnFamily X Y f) : mySet M2 :=
+  fun (y : M2) => exists (x : M1), A ∈ power X -> x ∈ A -> y = f x.
 
 (* 単射 : injection *)
 Definition mySetInj {M1 M2 : Type} (f : M1 -> M2) {A : mySet M1} {B : mySet M2}
@@ -346,8 +342,8 @@ Section 写像.
   Variable M1 M2 M3 : Type.
   Variable f : M2 -> M3.
   Variable g : M1 -> M2.
-  Variable A : mySet M1.
-  Variable B : mySet M2.
+  Variables A A' : mySet M1.
+  Variable B B' : mySet M2.
   Variable C : mySet M3.
   Hypothesis gAB : g ∈Map A \to B.
   Hypothesis fBC : f ∈Map B \to C.
@@ -384,6 +380,22 @@ Section 写像.
     rewrite H1.
       by apply: gAB.
   Qed.
+
+  Variable h : M1 -> M2.
+  Variable X : mySet M1.
+  Variable Y : mySet M2.
+  Variable V V' : mySet M1.
+  Hypothesis hXY : myMapOnFamily X Y h.
+  Check @ImgOfSubset M1 M2 h V X Y hXY.
+  Check @ImgOfSubset M1 M2 h (V \ V') X Y hXY.
+  Check (@ImgOfSubset M1 M2 h V X Y hXY) \ (@ImgOfSubset M1 M2 h V' X Y hXY).
+  (* TODO *)
+  Lemma ImSubset :
+    V' ∈ power X -> V ∈ power X -> V' ⊂ V ->
+    (ImgOfSubset V hXY \ ImgOfSubset V' hXY) ⊂ ImgOfSubset (V \ V') hXY.
+  Proof.
+    Admitted.
+  
 End 写像.
 
 (* 5.5 fintype を用いた有限集合の形式化 *)
