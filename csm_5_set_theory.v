@@ -5,6 +5,7 @@ Coq/SSReflect/MathComp による定理証明
 ======
 2018_05_03 @suharahiromichi
 2020_10_25 @morita_hm : 積集合関連の演算を追記
+2020_11_08 @morita_hm : 部分集合に対する像, 逆像を追記
  *)
 
 From mathcomp Require Import all_ssreflect.
@@ -315,13 +316,13 @@ Definition ImgOf {M1 M2 : Type} (f : M1 -> M2) {A : mySet M1} {B : mySet M2}
            (_ : f ∈Map A \to B) : mySet M2 :=
   fun (y : M2) => exists (x : M1), y = f x /\ x ∈ A.
 
-(* @morita_hm : 部分集合族を用いた像の定義 *)
-Definition ImgOfSubset {M1 M2 : Type} (f : M1 -> M2) {X : mySet M1} {Y : mySet M2} (_ : f ∈Map X \to Y) (A : mySet M1) : mySet M2 :=
-  fun (y : M2) => exists (x : M1), A ∈ power X -> x ∈ A -> y = f x.
+(* @morita_hm : 部分集合を用いた像の定義 *)
+Definition ImgOfSub {M1 M2 : Type} (f : M1 -> M2) {X : mySet M1} {Y : mySet M2} (_ : f ∈Map X \to Y) (A : mySet M1) : mySet M2 :=
+  fun (y : M2) => exists (x : M1), A ⊂ X -> x ∈ A -> y = f x.
 
 (* 逆像 : f^{-1}(B) *)
-Definition myPullBack {M1 M2 : Type} (f : M1 -> M2) {X : mySet M1} {Y : mySet M2} (_ : f ∈Map X \to Y) (B : mySet M2) : mySet M1 :=
-  fun (x : M1) => exists (y : M2), B ∈ power Y -> y ∈ B -> y = f x. 
+Definition InvImgOfSub {M1 M2 : Type} (f : M1 -> M2) {X : mySet M1} {Y : mySet M2} (_ : f ∈Map X \to Y) (B : mySet M2) : mySet M1 :=
+  fun (x : M1) => exists (y : M2), B ⊂ Y -> y ∈ B -> y = f x. 
 
 (* 単射 : injection *)
 Definition mySetInj {M1 M2 : Type} (f : M1 -> M2) {A : mySet M1} {B : mySet M2}
@@ -391,21 +392,34 @@ Section 写像.
   Variable V : mySet M1.
   Variable W1 W2 : mySet M2.
   Hypothesis hXY : h∈Map X \to Y.
-  Check @ImgOfSubset M1 M2 h X Y hXY X.
-  Check @ImgOfSubset M1 M2 h X Y hXY (X \ V).
-  Check (@ImgOfSubset M1 M2 h X Y hXY X) \ (@ImgOfSubset M1 M2 h X Y hXY V).
-  (* TODO *)
-  Lemma ImSubset :
-    V ∈ power X -> (ImgOfSubset hXY X \ ImgOfSubset hXY V) ⊂ ImgOfSubset hXY (X \ V).
+
+  Lemma ImgOfSubIncl :
+    V ⊂ X -> (ImgOfSub hXY X \ ImgOfSub hXY V) ⊂ ImgOfSub hXY (X \ V).
   Proof.
   Admitted.
 
-  Lemma PullBackSubset :
-    W1 ∈ power Y -> W2 ∈ power Y -> W1 ⊂ W2 -> myPullBack hXY W1 ⊂ myPullBack hXY W2.
+  Lemma InvImgOfSubIncl :
+    W1 ⊂ Y -> W2 ⊂ Y -> W1 ⊂ W2 -> InvImgOfSub hXY W1 ⊂ InvImgOfSub hXY W2.
   Proof.
     Admitted.
   
 End 写像.
+
+(*
+   同値関係の準備 : 2項関係, 反射律, 対称律, 推移律 を定義する
+*)
+Definition myRel (M : Type) := M -> M -> Prop.
+
+(* 反射律 *)
+Definition myRefl {M : Type} (r : myRel M) :=
+  forall (x : M), r x x.
+(* 対照律 *)
+Definition mySym {M : Type} (r : myRel M) :=
+  forall (x y : M), r x y -> r y x.
+(* 推移律 *)
+Definition myTrans {M : Type} (r : myRel M) :=
+  forall (x y z : M), r x y -> r y z -> r x z.
+
 
 (* 5.5 fintype を用いた有限集合の形式化 *)
 
