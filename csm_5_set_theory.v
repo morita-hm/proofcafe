@@ -1,6 +1,10 @@
 (**
 Coq/SSReflect/MathComp による定理証明
 
+Notation : 本ファイルは下書きであり,
+           ProofCafe で解説する資料との互換性がない部分があります。
+           ProofCafe での解説は connpass の案内を参照してください。
+
 5. 集合の形式化
 ======
 2018_05_03 @suharahiromichi
