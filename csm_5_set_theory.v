@@ -1,7 +1,7 @@
 (**
 Coq/SSReflect/MathComp による定理証明
 
-Notation : 本ファイルは下書きであり,
+本ファイルは下書きであり,
            ProofCafe で解説する資料との互換性がない部分があります。
            ProofCafe での解説は connpass の案内を参照してください。
 
@@ -245,18 +245,12 @@ Section 演算.
   Proof.
     apply: axiom_ExteqmySet.
     rewrite /eqmySet /myComplement /myCap /myCup /belong.
-    apply: conj.
-    - move=> x.
+    apply: conj=> x.
       rewrite /belong => H.
-      case H => Hna Hnb.
-      + move=> Hnab.
+      case H => Hna Hnb Hnab.
         apply: Hna.
-        case: Hnab.
-        * done.
-        * move=> Hbx.
-          done.
-    - move=> x.
-      rewrite /belong => H.
+        by case: Hnab.
+    - rewrite /belong => H.
       split => Hn.
       + apply: H.
           by left.
@@ -264,6 +258,28 @@ Section 演算.
           by right.
   Qed.
 
+  Lemma deMorgan2 (A B : mySet M) :  (A^c) ∪ (B^c) = (A ∩ B)^c.
+  Proof.
+    apply: axiom_ExteqmySet.
+    rewrite /eqmySet.
+    rewrite /myCup /myCap /myComplement /belong /mySub.
+    split=> x.
+    - rewrite /belong.
+      case=> H H'.
+      + apply: H.
+          by case: H'.
+      + apply: H.
+          by case: H'.
+    - case: (axiom_mySet A x).
+      + rewrite /belong => Hin Hnab.
+        right => Hb.
+        apply: Hnab.
+        by split.
+      + rewrite /belong => Hout Hnab.
+          by left.
+  Qed.          
+
+  
   (* @morita_hm : 差集合 = 相対補集合 *)
   Lemma relative_complemant (A B : mySet M) : A \ B = A ∩ (B^c).
   Proof.
