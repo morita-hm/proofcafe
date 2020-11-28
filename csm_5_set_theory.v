@@ -24,7 +24,14 @@ Set Print All.
 Definition mySet (M : Type) := M -> Prop.
 Definition belong {M : Type} (A : mySet M) (x : M) : Prop := A x.
 Notation "x ∈ A" := (belong A x) (at level 11).
-Axiom axiom_mySet : forall (M : Type) (A : mySet M), forall (x : M), x ∈ A \/ ~(x ∈ A).
+
+(* リフレクション補題の成立を公理として, 排中律を証明する *)
+Axiom refl_mySet : forall (M : Type) (A : mySet M) (x : M), reflect (A x) true.
+Lemma axiom_mySet : forall (M : Type) (A : mySet M), forall (x : M), x ∈ A \/ ~(x ∈ A).
+Proof.
+  rewrite /belong=> M A x.
+  by case: (refl_mySet A x) => Hr; [left | right].
+Qed.  
 
 Definition myEmptySet {M : Type} : mySet M := fun _ => False.
 Definition myMotherSet {M : Type} : mySet M := fun _ => True.
@@ -239,8 +246,8 @@ Section 演算.
     - rewrite myCapC.
       by apply: intersection_self.
   Qed.
-  
-  (* @morita_hm : de Morgan *)
+
+  (* de Morgan *)
   Lemma deMorgan (A B : mySet M) :  (A^c) ∩ (B^c) = (A ∪ B)^c.
   Proof.
     apply: axiom_ExteqmySet.
